@@ -3,7 +3,7 @@
   "port": 5432,
   "username": "dev",
   "password": "",
-  "database": "book_test",
+  "database": "book_development",
   "migration-folder": "db/migrate",
   "dump-file": "db/dump.sql",
   "column-type": "string",
