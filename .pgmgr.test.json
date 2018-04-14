@@ -1,0 +1,12 @@
+{
+  "host": "localhost",
+  "port": 5432,
+  "username": "dev",
+  "password": "",
+  "database": "book_test",
+  "migration-folder": "db/migrate",
+  "dump-file": "db/dump.sql",
+  "column-type": "string",
+  "format": "datetime",
+  "seed-tables": []
+}
