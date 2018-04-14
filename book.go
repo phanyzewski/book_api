@@ -11,7 +11,7 @@ type Book struct {
 	// Rating        Rating        `json:"rating,omitempty"`
 	// BookAvailable BookAvailable `"json:'bookAvailable,omitempty"`
 	// Publisher     *Publisher    `json:"publisher,omitempty"`
-	// Author        *Author       `json:"author,omitempty"`
+	Author *Author `json:"author,omitempty"`
 }
 
 func (b *Book) GetBook(db *sqlx.DB) error {

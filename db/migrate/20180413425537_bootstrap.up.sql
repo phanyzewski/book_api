@@ -1,11 +1,7 @@
 CREATE TABLE books (
   id SERIAL PRIMARY KEY,
   title TEXT,
-  published_date TEXT,
-  rating NUMERIC,
-  book_available TEXT
-  -- publisher TEXT,
-  -- author TEXT
+  published_date TEXT
 );
 
 CREATE TABLE authors (
