@@ -1,22 +1,20 @@
-CREATE SCHEMA IF NOT EXISTS library;
-
-CREATE TABLE library.books (
+CREATE TABLE books (
   book_id SERIAL PRIMARY KEY,
   title TEXT,
   published_date TIMESTAMP WITHOUT TIME ZONE NOT NULL,
   rating NUMERIC,
-  book_available TEXT,
-  publisher TEXT,
-  author TEXT
-
+  book_available TEXT
+  -- publisher TEXT,
+  -- author TEXT
 );
-CREATE TABLE library.authors (
+
+CREATE TABLE authors (
   author_id SERIAL PRIMARY KEY,
   first_name TEXT,
   last_name TEXT,
   pen_name TEXT
 );
-CREATE TABLE library.publishers (
+CREATE TABLE publishers (
   publisher_id SERIAL PRIMARY KEY,
   name TEXT
 );
