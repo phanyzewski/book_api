@@ -7,12 +7,6 @@ import (
 	"github.com/joho/godotenv"
 )
 
-// type Publisher struct {
-// 	ID    string  `json:"id,omitempty"`
-// 	Name  string  `json:"title,omitempty"`
-// 	Books *[]Book `json:"books,omitempty"`
-// }
-
 // type BookAvailable bool
 
 // const (
