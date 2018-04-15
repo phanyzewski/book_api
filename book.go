@@ -18,10 +18,6 @@ func (b *Book) GetBook(db *sqlx.DB) error {
 	book := Book{}
 	err := db.Get(&book, "SELECT title FROM books WHERE id=$1", b.ID)
 
-	if err != nil {
-		return err
-	}
-
 	return err
 }
 

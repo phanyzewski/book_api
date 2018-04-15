@@ -13,10 +13,7 @@ type Author struct {
 
 func (a *Author) GetAuthor(db *sqlx.DB) error {
 	author := Author{}
-	err := db.Get(&author, "SELECT first_name, last_name, pen_name FROM authors WHERE id=$1", a.ID)
-	if err != nil {
-		return err
-	}
+	err := db.Get(&author, "SELECT * FROM authors WHERE id=$1", a.ID)
 
 	return err
 }
