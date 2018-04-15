@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 
@@ -8,6 +9,7 @@ import (
 )
 
 func main() {
+	fmt.Println("Starting Book API...")
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Error loading .env file")
