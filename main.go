@@ -7,21 +7,6 @@ import (
 	"github.com/joho/godotenv"
 )
 
-// type BookAvailable bool
-
-// const (
-// 	CheckedOut BookAvailable = false
-// 	CheckedIn  BookAvailable = true
-// )
-
-// type Rating int
-
-// const (
-// 	OneStar Rating = iota + 1
-// 	TwoStars
-// 	ThreeStars
-// )
-
 func main() {
 	err := godotenv.Load()
 	if err != nil {

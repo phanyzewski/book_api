@@ -90,8 +90,6 @@ func (a *App) GetBook(w http.ResponseWriter, r *http.Request) {
 	}
 
 	RespondWithJSON(w, http.StatusOK, b)
-
-	json.NewEncoder(w).Encode(&Book{})
 }
 
 // Display all books
@@ -198,8 +196,6 @@ func (a *App) GetAuthor(w http.ResponseWriter, r *http.Request) {
 	}
 
 	RespondWithJSON(w, http.StatusOK, author)
-
-	json.NewEncoder(w).Encode(&Author{})
 }
 
 // Display all authors
@@ -306,8 +302,6 @@ func (a *App) GetPublisher(w http.ResponseWriter, r *http.Request) {
 	}
 
 	RespondWithJSON(w, http.StatusOK, p)
-
-	json.NewEncoder(w).Encode(&Publisher{})
 }
 
 // Display all publishers
