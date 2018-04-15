@@ -49,6 +49,9 @@ func TestMain(m *testing.M) {
 func ClearTable() {
 	a.DB.Exec("DELETE FROM books")
 	a.DB.Exec("ALTER SEQUENCE books_id_seq RESTART WITH 1")
+
+	a.DB.Exec("DELETE FROM publishers")
+	a.DB.Exec("ALTER SEQUENCE publishers_id_seq RESTART WITH 1")
 }
 
 func TestEmptyTable(t *testing.T) {
@@ -56,6 +59,15 @@ func TestEmptyTable(t *testing.T) {
 
 	req, _ := http.NewRequest("GET", "/books", nil)
 	response := ExecuteRequest(req)
+
+	CheckResponseCode(t, http.StatusOK, response.Code)
+
+	if body := response.Body.String(); body != "[]" {
+		t.Errorf("Expected an empty array. Got %s", body)
+	}
+
+	req, _ = http.NewRequest("GET", "/publishers", nil)
+	response = ExecuteRequest(req)
 
 	CheckResponseCode(t, http.StatusOK, response.Code)
 
@@ -169,6 +181,103 @@ func TestDeleteBook(t *testing.T) {
 	CheckResponseCode(t, http.StatusOK, response.Code)
 
 	req, _ = http.NewRequest("GET", "/book/1", nil)
+	response = ExecuteRequest(req)
+	CheckResponseCode(t, http.StatusNotFound, response.Code)
+
+}
+
+func TestGetNonExistentPublisher(t *testing.T) {
+	ClearTable()
+
+	req, _ := http.NewRequest("GET", "/publisher/11", nil)
+	response := ExecuteRequest(req)
+
+	CheckResponseCode(t, http.StatusNotFound, response.Code)
+
+	var m map[string]string
+	json.Unmarshal(response.Body.Bytes(), &m)
+
+	if m["error"] != "Publisher not found" {
+		t.Errorf("Expected the 'error' key of the response to be set to 'Publisher not found'. Got '%s'", m["error"])
+	}
+}
+
+func TestCreatePublisher(t *testing.T) {
+	ClearTable()
+
+	payload := []byte(`{"name":"Penguin"}`)
+
+	req, _ := http.NewRequest("POST", "/publisher", bytes.NewBuffer(payload))
+	response := ExecuteRequest(req)
+
+	CheckResponseCode(t, http.StatusCreated, response.Code)
+
+	var m map[string]interface{}
+	json.Unmarshal(response.Body.Bytes(), &m)
+
+	if m["name"] != "Penguin" {
+		t.Errorf("Expected Publisher title to be 'Penguin'. Got '%v'", m["name"])
+	}
+}
+
+func TestGetPublisher(t *testing.T) {
+	ClearTable()
+	AddPublishers(1)
+
+	req, _ := http.NewRequest("GET", "/publisher/1", nil)
+	response := ExecuteRequest(req)
+
+	CheckResponseCode(t, http.StatusOK, response.Code)
+}
+
+func AddPublishers(count int) {
+	if count < 1 {
+		count = 1
+	}
+
+	for i := 0; i < count; i++ {
+		a.DB.Exec("INSERT INTO publishers (name) VALUES ($1)", "Publisher "+strconv.Itoa(i))
+	}
+}
+
+func TestUpdatePublisher(t *testing.T) {
+	ClearTable()
+	AddPublishers(1)
+
+	req, _ := http.NewRequest("GET", "/publisher/1", nil)
+	response := ExecuteRequest(req)
+	var originalPublisher map[string]interface{}
+	json.Unmarshal(response.Body.Bytes(), &originalPublisher)
+
+	payload := []byte(`{"name":"test publisher - updated publisher"}`)
+
+	req, _ = http.NewRequest("PUT", "/publisher/1", bytes.NewBuffer(payload))
+	response = ExecuteRequest(req)
+
+	CheckResponseCode(t, http.StatusOK, response.Code)
+
+	var m map[string]interface{}
+	json.Unmarshal(response.Body.Bytes(), &m)
+
+	if m["name"] == originalPublisher["name"] {
+		t.Errorf("Expected the name to change from '%v' to '%v'. Got '%v'", originalPublisher["name"], m["name"], m["name"])
+	}
+}
+
+func TestDeletePublisher(t *testing.T) {
+	ClearTable()
+	AddPublishers(1)
+
+	req, _ := http.NewRequest("GET", "/publisher/1", nil)
+	response := ExecuteRequest(req)
+	CheckResponseCode(t, http.StatusOK, response.Code)
+
+	req, _ = http.NewRequest("DELETE", "/publisher/1", nil)
+	response = ExecuteRequest(req)
+
+	CheckResponseCode(t, http.StatusOK, response.Code)
+
+	req, _ = http.NewRequest("GET", "/publisher/1", nil)
 	response = ExecuteRequest(req)
 	CheckResponseCode(t, http.StatusNotFound, response.Code)
 

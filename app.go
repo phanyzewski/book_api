@@ -40,6 +40,13 @@ func (a *App) InitializeRoutes() {
 	a.Router.HandleFunc("/book/{id:[0-9]+}", a.GetBook).Methods("GET")
 	a.Router.HandleFunc("/book/{id:[0-9]+}", a.UpdateBook).Methods("PUT")
 	a.Router.HandleFunc("/book/{id:[0-9]+}", a.DeleteBook).Methods("DELETE")
+
+	a.Router.HandleFunc("/publishers", a.GetPublishers).Methods("GET")
+	a.Router.HandleFunc("/publisher", a.CreatePublisher).Methods("POST")
+
+	a.Router.HandleFunc("/publisher/{id:[0-9]+}", a.GetPublisher).Methods("GET")
+	a.Router.HandleFunc("/publisher/{id:[0-9]+}", a.UpdatePublisher).Methods("PUT")
+	a.Router.HandleFunc("/publisher/{id:[0-9]+}", a.DeletePublisher).Methods("DELETE")
 }
 
 func RespondWithError(w http.ResponseWriter, code int, message string) {
@@ -155,6 +162,114 @@ func (a *App) DeleteBook(w http.ResponseWriter, r *http.Request) {
 
 	book := Book{ID: id}
 	if err := book.DeleteBook(a.DB); err != nil {
+		RespondWithError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	RespondWithJSON(w, http.StatusOK, map[string]string{"result": "success"})
+}
+
+// Display a single publisher
+func (a *App) GetPublisher(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	id, err := strconv.Atoi(params["id"])
+
+	if err != nil {
+		RespondWithError(w, http.StatusBadRequest, "Invalid publisher ID")
+		return
+	}
+
+	p := Publisher{ID: id}
+	if err := p.GetPublisher(a.DB); err != nil {
+		switch err {
+		case sql.ErrNoRows:
+			RespondWithError(w, http.StatusNotFound, "Publisher not found")
+		default:
+			RespondWithError(w, http.StatusInternalServerError, err.Error())
+		}
+		return
+	}
+
+	RespondWithJSON(w, http.StatusOK, p)
+
+	json.NewEncoder(w).Encode(&Publisher{})
+}
+
+// Display all publishers
+func (a *App) GetPublishers(w http.ResponseWriter, r *http.Request) {
+	count, _ := strconv.Atoi(r.FormValue("count"))
+	start, _ := strconv.Atoi(r.FormValue("start"))
+
+	if count > 10 || count < 1 {
+		count = 10
+	}
+	if start < 0 {
+		start = 0
+	}
+
+	publishers, err := GetPublishers(a.DB, start, count)
+	if err != nil {
+		RespondWithError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	RespondWithJSON(w, http.StatusOK, publishers)
+}
+
+// Create a new publisher
+func (a *App) CreatePublisher(w http.ResponseWriter, r *http.Request) {
+	var publisher Publisher
+	decoder := json.NewDecoder(r.Body)
+
+	if err := decoder.Decode(&publisher); err != nil {
+		RespondWithError(w, http.StatusBadRequest, "Invalid request payload")
+		return
+	}
+	defer r.Body.Close()
+
+	if err := publisher.CreatePublisher(a.DB); err != nil {
+		RespondWithError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	RespondWithJSON(w, http.StatusCreated, publisher)
+}
+
+func (a *App) UpdatePublisher(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	id, err := strconv.Atoi(params["id"])
+	if err != nil {
+		RespondWithError(w, http.StatusBadRequest, "Invalid publisher ID")
+		return
+	}
+
+	var publisher Publisher
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&publisher); err != nil {
+		RespondWithError(w, http.StatusBadRequest, "Invalid resquest payload")
+		return
+	}
+	defer r.Body.Close()
+	publisher.ID = id
+
+	if err := publisher.UpdatePublisher(a.DB); err != nil {
+		RespondWithError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	RespondWithJSON(w, http.StatusOK, publisher)
+}
+
+func (a *App) DeletePublisher(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	id, err := strconv.Atoi(params["id"])
+	if err != nil {
+		RespondWithError(w, http.StatusBadRequest, "Invalid publisher ID")
+		return
+	}
+
+	publisher := Publisher{ID: id}
+	if err := publisher.DeletePublisher(a.DB); err != nil {
 		RespondWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}

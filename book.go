@@ -10,7 +10,7 @@ type Book struct {
 	PublishedDate string `json:"publishedDate,omitempty"`
 	// Rating        Rating        `json:"rating,omitempty"`
 	// BookAvailable BookAvailable `"json:'bookAvailable,omitempty"`
-	// Publisher     *Publisher    `json:"publisher,omitempty"`
+	Publisher *Publisher `json:"publisher,omitempty"`
 	// Author        *Author       `json:"author,omitempty"`
 }
 
