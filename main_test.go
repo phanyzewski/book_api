@@ -24,31 +24,17 @@ func TestMain(m *testing.M) {
 	a = App{}
 	a.Initialize(os.Getenv("TEST_DATABASE_URL"))
 
-	// ensureTableExists()
-
 	code := m.Run()
 	ClearTable()
 	os.Exit(code)
 }
 
-// func ensureTableExists() {
-// 	if _, err := a.DB.Exec(tableCreationQuery); err != nil {
-// 		log.Fatal(err)
-// 	}
-// }
-
-// const tableCreationQuery = `CREATE TABLE IF NOT EXISTS books
-// (
-//   id SERIAL PRIMARY KEY,
-//   title TEXT,
-//   published_date TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-//   rating NUMERIC,
-//   book_available TEXT
-// )`
-
 func ClearTable() {
 	a.DB.Exec("DELETE FROM books")
 	a.DB.Exec("ALTER SEQUENCE books_id_seq RESTART WITH 1")
+
+	a.DB.Exec("DELETE FROM authors")
+	a.DB.Exec("ALTER SEQUENCE authors_id_seq RESTART WITH 1")
 }
 
 func TestEmptyTable(t *testing.T) {
@@ -56,6 +42,15 @@ func TestEmptyTable(t *testing.T) {
 
 	req, _ := http.NewRequest("GET", "/books", nil)
 	response := ExecuteRequest(req)
+
+	CheckResponseCode(t, http.StatusOK, response.Code)
+
+	if body := response.Body.String(); body != "[]" {
+		t.Errorf("Expected an empty array. Got %s", body)
+	}
+
+	req, _ = http.NewRequest("GET", "/authors", nil)
+	response = ExecuteRequest(req)
 
 	CheckResponseCode(t, http.StatusOK, response.Code)
 
@@ -172,4 +167,92 @@ func TestDeleteBook(t *testing.T) {
 	response = ExecuteRequest(req)
 	CheckResponseCode(t, http.StatusNotFound, response.Code)
 
+}
+
+func TestGetNonExistentAuthor(t *testing.T) {
+	ClearTable()
+
+	req, _ := http.NewRequest("GET", "/author/11", nil)
+	response := ExecuteRequest(req)
+
+	CheckResponseCode(t, http.StatusNotFound, response.Code)
+
+	var m map[string]string
+	json.Unmarshal(response.Body.Bytes(), &m)
+
+	if m["error"] != "Author not found" {
+		t.Errorf("Expected the 'error' key of the response to be set to 'Author not found'. Got '%s'", m["error"])
+	}
+}
+
+func TestCreateAuthor(t *testing.T) {
+	ClearTable()
+
+	payload := []byte(`{"firstName":"John", "lastName":"Tolkien", "penName":"J.R.R. Tolkien"}`)
+
+	req, _ := http.NewRequest("POST", "/author", bytes.NewBuffer(payload))
+	response := ExecuteRequest(req)
+
+	CheckResponseCode(t, http.StatusCreated, response.Code)
+}
+
+func TestGetAuthor(t *testing.T) {
+	ClearTable()
+	AddAuthors(1)
+
+	req, _ := http.NewRequest("GET", "/author/1", nil)
+	response := ExecuteRequest(req)
+
+	CheckResponseCode(t, http.StatusOK, response.Code)
+}
+
+func AddAuthors(count int) {
+	if count < 1 {
+		count = 1
+	}
+
+	for i := 0; i < count; i++ {
+		a.DB.Exec("INSERT INTO authors (first_name, last_name, pen_name) VALUES ($1, $2, $3)", "bob", "doe", "Author "+strconv.Itoa(i))
+	}
+}
+
+func TestUpdateAuthor(t *testing.T) {
+	ClearTable()
+	AddAuthors(1)
+
+	req, _ := http.NewRequest("GET", "/author/1", nil)
+	response := ExecuteRequest(req)
+	var originalAuthor map[string]interface{}
+	json.Unmarshal(response.Body.Bytes(), &originalAuthor)
+
+	payload := []byte(`{"penName":"test Author - updated pen_name"}`)
+
+	req, _ = http.NewRequest("PUT", "/author/1", bytes.NewBuffer(payload))
+	response = ExecuteRequest(req)
+
+	CheckResponseCode(t, http.StatusOK, response.Code)
+
+	var m map[string]interface{}
+	json.Unmarshal(response.Body.Bytes(), &m)
+
+	if m["penName"] == originalAuthor["penName"] {
+		t.Errorf("Expected the penName to change from '%v' to '%v'. Got '%v'", originalAuthor["penName"], m["penName"], m["penName"])
+	}
+}
+
+func TestDeleteAuthor(t *testing.T) {
+	ClearTable()
+	AddAuthors(1)
+
+	req, _ := http.NewRequest("GET", "/author/1", nil)
+	response := ExecuteRequest(req)
+	CheckResponseCode(t, http.StatusOK, response.Code)
+
+	req, _ = http.NewRequest("DELETE", "/author/1", nil)
+	response = ExecuteRequest(req)
+	CheckResponseCode(t, http.StatusOK, response.Code)
+
+	req, _ = http.NewRequest("GET", "/author/1", nil)
+	response = ExecuteRequest(req)
+	CheckResponseCode(t, http.StatusNotFound, response.Code)
 }

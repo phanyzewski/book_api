@@ -40,6 +40,13 @@ func (a *App) InitializeRoutes() {
 	a.Router.HandleFunc("/book/{id:[0-9]+}", a.GetBook).Methods("GET")
 	a.Router.HandleFunc("/book/{id:[0-9]+}", a.UpdateBook).Methods("PUT")
 	a.Router.HandleFunc("/book/{id:[0-9]+}", a.DeleteBook).Methods("DELETE")
+
+	a.Router.HandleFunc("/authors", a.GetAuthors).Methods("GET")
+	a.Router.HandleFunc("/author", a.CreateAuthor).Methods("POST")
+
+	a.Router.HandleFunc("/author/{id:[0-9]+}", a.GetAuthor).Methods("GET")
+	a.Router.HandleFunc("/author/{id:[0-9]+}", a.UpdateAuthor).Methods("PUT")
+	a.Router.HandleFunc("/author/{id:[0-9]+}", a.DeleteAuthor).Methods("DELETE")
 }
 
 func RespondWithError(w http.ResponseWriter, code int, message string) {
@@ -155,6 +162,114 @@ func (a *App) DeleteBook(w http.ResponseWriter, r *http.Request) {
 
 	book := Book{ID: id}
 	if err := book.DeleteBook(a.DB); err != nil {
+		RespondWithError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	RespondWithJSON(w, http.StatusOK, map[string]string{"result": "success"})
+}
+
+// Display a single author
+func (a *App) GetAuthor(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	id, err := strconv.Atoi(params["id"])
+
+	if err != nil {
+		RespondWithError(w, http.StatusBadRequest, "Invalid author ID")
+		return
+	}
+
+	author := Author{ID: id}
+	if err := author.GetAuthor(a.DB); err != nil {
+		switch err {
+		case sql.ErrNoRows:
+			RespondWithError(w, http.StatusNotFound, "Author not found")
+		default:
+			RespondWithError(w, http.StatusInternalServerError, err.Error())
+		}
+		return
+	}
+
+	RespondWithJSON(w, http.StatusOK, author)
+
+	json.NewEncoder(w).Encode(&Author{})
+}
+
+// Display all authors
+func (a *App) GetAuthors(w http.ResponseWriter, r *http.Request) {
+	count, _ := strconv.Atoi(r.FormValue("count"))
+	start, _ := strconv.Atoi(r.FormValue("start"))
+
+	if count > 10 || count < 1 {
+		count = 10
+	}
+	if start < 0 {
+		start = 0
+	}
+
+	authors, err := GetAuthors(a.DB, start, count)
+	if err != nil {
+		RespondWithError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	RespondWithJSON(w, http.StatusOK, authors)
+}
+
+// Create a new author
+func (a *App) CreateAuthor(w http.ResponseWriter, r *http.Request) {
+	var author Author
+	decoder := json.NewDecoder(r.Body)
+
+	if err := decoder.Decode(&author); err != nil {
+		RespondWithError(w, http.StatusBadRequest, "Invalid request payload")
+		return
+	}
+	defer r.Body.Close()
+
+	if err := author.CreateAuthor(a.DB); err != nil {
+		RespondWithError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	RespondWithJSON(w, http.StatusCreated, author)
+}
+
+func (a *App) UpdateAuthor(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	id, err := strconv.Atoi(params["id"])
+	if err != nil {
+		RespondWithError(w, http.StatusBadRequest, "Invalid author ID")
+		return
+	}
+
+	var author Author
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&author); err != nil {
+		RespondWithError(w, http.StatusBadRequest, "Invalid resquest payload")
+		return
+	}
+	defer r.Body.Close()
+	author.ID = id
+
+	if err := author.UpdateAuthor(a.DB); err != nil {
+		RespondWithError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	RespondWithJSON(w, http.StatusOK, author)
+}
+
+func (a *App) DeleteAuthor(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	id, err := strconv.Atoi(params["id"])
+	if err != nil {
+		RespondWithError(w, http.StatusBadRequest, "Invalid author ID")
+		return
+	}
+
+	author := Author{ID: id}
+	if err := author.DeleteAuthor(a.DB); err != nil {
 		RespondWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
