@@ -1,7 +1,7 @@
 CREATE TABLE books (
   id SERIAL PRIMARY KEY,
   title TEXT,
-  published_date TEXT
+  published_date TIMESTAMP WITHOUT TIME ZONE
 );
 
 CREATE TABLE authors (

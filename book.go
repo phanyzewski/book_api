@@ -1,22 +1,52 @@
 package main
 
 import (
+	"time"
+
 	"github.com/jmoiron/sqlx"
 )
 
 type Book struct {
-	ID            int    `json:"id,omitempty"`
-	Title         string `json:"title,omitempty"`
-	PublishedDate string `json:"publishedDate,omitempty"`
-	// Rating        Rating        `json:"rating,omitempty"`
-	// BookAvailable BookAvailable `"json:'bookAvailable,omitempty"`
-	Publisher *Publisher `json:"publisher,omitempty"`
-	Author    *Author    `json:"author,omitempty"`
+	ID            int        `json:"id,omitempty"`
+	Title         string     `json:"title,omitempty"`
+	PublishedDate time.Time  `json:"publishedDate,omitempty" db:"published_date"`
+	Rating        Rating     `json:"rating,omitempty"`
+	Status        Status     `json:"bookAvailable,omitempty"`
+	Publisher     *Publisher `json:"publisher,omitempty" db:"publisher_id"`
+	Author        *Author    `json:"author,omitempty" db:"author_id"`
+}
+
+type Status int
+
+const (
+	CheckedOut Status = iota
+	CheckedIn
+)
+
+type Rating int
+
+const (
+	OneStar Rating = iota + 1
+	TwoStars
+	ThreeStars
+)
+
+func (s Status) String() string {
+	names := [...]string{
+		"CheckedOut",
+		"CheckedIn",
+	}
+
+	if s != CheckedOut && s != CheckedIn {
+		return "Unknown"
+	}
+
+	return names[s]
 }
 
 func (b *Book) GetBook(db *sqlx.DB) error {
 	book := Book{}
-	err := db.Get(&book, "SELECT title FROM books WHERE id=$1", b.ID)
+	err := db.Get(&book, "SELECT * FROM books WHERE id=$1", b.ID)
 
 	return err
 }

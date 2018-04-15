@@ -94,7 +94,7 @@ func TestGetNonExistentBook(t *testing.T) {
 func TestCreateBook(t *testing.T) {
 	ClearTable()
 
-	payload := []byte(`{"title":"The Hobbit", "published_date":"1937-09-21"}`)
+	payload := []byte(`{"title":"The Hobbit", "publishedDate":"1937-09-21T00:00:00Z", "status":0}`)
 
 	req, _ := http.NewRequest("POST", "/book", bytes.NewBuffer(payload))
 	response := ExecuteRequest(req)
@@ -106,6 +106,10 @@ func TestCreateBook(t *testing.T) {
 
 	if m["title"] != "The Hobbit" {
 		t.Errorf("Expected book title to be 'The Hobbit'. Got '%v'", m["title"])
+	}
+
+	if m["publishedDate"] != "1937-09-21T00:00:00Z" {
+		t.Errorf("Expected published date to be '1937-09-21T00:00:00Z'. Got '%v'", m["publishedDate"])
 	}
 }
 
@@ -125,7 +129,7 @@ func AddBooks(count int) {
 	}
 
 	for i := 0; i < count; i++ {
-		a.DB.Exec("INSERT INTO books (title) VALUES ($1)", "Book "+strconv.Itoa(i))
+		a.DB.Exec("INSERT INTO books (title, published_date, rating, status) VALUES ($1, NOW(), $2, $2)", "Book "+strconv.Itoa(i), i)
 	}
 }
 
