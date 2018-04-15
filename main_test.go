@@ -188,7 +188,7 @@ func TestGetNonExistentAuthor(t *testing.T) {
 func TestCreateAuthor(t *testing.T) {
 	ClearTable()
 
-	payload := []byte(`{"first_name":"John", "last_name":"Tolkien", "pen_name":"J.R.R. Tolkien"}`)
+	payload := []byte(`{"firstName":"John", "lastName":"Tolkien", "penName":"J.R.R. Tolkien"}`)
 
 	req, _ := http.NewRequest("POST", "/author", bytes.NewBuffer(payload))
 	response := ExecuteRequest(req)
@@ -225,7 +225,7 @@ func TestUpdateAuthor(t *testing.T) {
 	var originalAuthor map[string]interface{}
 	json.Unmarshal(response.Body.Bytes(), &originalAuthor)
 
-	payload := []byte(`{"pen_name":"test Author - updated pen_name"}`)
+	payload := []byte(`{"penName":"test Author - updated pen_name"}`)
 
 	req, _ = http.NewRequest("PUT", "/author/1", bytes.NewBuffer(payload))
 	response = ExecuteRequest(req)
@@ -234,6 +234,10 @@ func TestUpdateAuthor(t *testing.T) {
 
 	var m map[string]interface{}
 	json.Unmarshal(response.Body.Bytes(), &m)
+
+	if m["penName"] == originalAuthor["penName"] {
+		t.Errorf("Expected the penName to change from '%v' to '%v'. Got '%v'", originalAuthor["penName"], m["penName"], m["penName"])
+	}
 }
 
 func TestDeleteAuthor(t *testing.T) {
@@ -246,11 +250,9 @@ func TestDeleteAuthor(t *testing.T) {
 
 	req, _ = http.NewRequest("DELETE", "/author/1", nil)
 	response = ExecuteRequest(req)
-
 	CheckResponseCode(t, http.StatusOK, response.Code)
 
 	req, _ = http.NewRequest("GET", "/author/1", nil)
 	response = ExecuteRequest(req)
 	CheckResponseCode(t, http.StatusNotFound, response.Code)
-
 }

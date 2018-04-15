@@ -11,28 +11,27 @@ type Author struct {
 	PenName   string `json:"penName,omitempty" db:"pen_name"`
 }
 
-func (a *Author) GetAuthor(db *sqlx.DB) error {
+func (b *Author) GetAuthor(db *sqlx.DB) error {
 	author := Author{}
-	err := db.Get(&author, "SELECT * FROM authors WHERE id=$1", a.ID)
+	err := db.Get(&author, "SELECT * FROM authors WHERE id=$1", b.ID)
 
 	return err
 }
 
-func (a *Author) UpdateAuthor(db *sqlx.DB) error {
-	_, err := db.Exec("UPDATE authors set first_name=$1, last_name=$2, pen_name=$3 WHERE id=$4", a.FirstName, a.LastName, a.PenName, a.ID)
+func (b *Author) UpdateAuthor(db *sqlx.DB) error {
+	_, err := db.Exec("UPDATE authors set first_name=$1, last_name=$2, pen_name=$3 WHERE id=$4", b.FirstName, b.LastName, b.PenName, b.ID)
 
 	return err
 }
 
-func (a *Author) DeleteAuthor(db *sqlx.DB) error {
-	_, err := db.Exec("DELETE FROM authors WHERE id=$1", a.ID)
+func (b *Author) DeleteAuthor(db *sqlx.DB) error {
+	_, err := db.Exec("DELETE FROM authors WHERE id=$1", b.ID)
 
 	return err
 }
 
-func (a *Author) CreateAuthor(db *sqlx.DB) error {
-	_, err := db.Exec("INSERT INTO authors (first_name, last_name, pen_name) VALUES ($1, $2, $3)", a.FirstName, a.LastName, a.PenName)
-
+func (b *Author) CreateAuthor(db *sqlx.DB) error {
+	_, err := db.Exec("INSERT INTO authors (first_name, last_name, pen_name) VALUES ($1, $2, $3)", b.FirstName, b.LastName, b.PenName)
 	return err
 }
 
