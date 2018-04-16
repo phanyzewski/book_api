@@ -20,7 +20,7 @@ type App struct {
 func (a *App) Initialize(dataSourceName string) {
 	var err error
 
-	a.DB, err = sqlx.Connect("postgres", "postgres://dev@localhost/book_development?sslmode=disable")
+	a.DB, err = sqlx.Connect("postgres", dataSourceName)
 	if err != nil {
 		log.Fatal(err)
 	}
