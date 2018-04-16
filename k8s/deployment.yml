@@ -1,0 +1,40 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: book_api-service
+  labels:
+    app: book_api-service
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: abook_api-service
+    spec:
+      containers:
+      - name: book_api-service
+        image: eu.gcr.io/book_api/book_api-service:${TAG}
+        command:
+        ports:
+          - containerPort: 8080
+        volumeMounts:
+          - name: book_api-config
+            mountPath: /etc/boolk_api/
+            readOnly: true
+      volumes:
+        - name: book_api-config
+          configMap: { name: book_api-config }
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: book_api-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: book_api-service
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 8080
+
