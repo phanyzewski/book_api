@@ -1,0 +1,21 @@
+version: '3'
+services:
+  db:
+    image: postgres
+    environment:
+      POSTGRES_DB: book_development
+      POSTGRES_USER: dev
+      POSTGRES_PASSWORD:
+    ports:
+      - 5432:5432
+  app:
+    build: .
+    command: ["pgmgr", "db", "migrate", "go", "run", "book_api.go"]
+    volumes:
+      - .:/go/src/github.com/phanyzewski/book_api
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    links:
+      - db
