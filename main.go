@@ -16,6 +16,7 @@ func main() {
 	}
 
 	a := App{}
+	fmt.Printf("env: DATABASE_URL%v\n", os.Getenv("DATABASE_URL"))
 	a.Initialize(os.Getenv("DATABASE_URL"))
 	a.Run(":8080")
 }
