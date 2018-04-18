@@ -1,9 +1,9 @@
 FROM golang:1.8
 
 WORKDIR /go/src/github.com/phanyzewski/book_api
-COPY . .
 
-RUN go get -d -v ./...
-RUN go install -v ./...
+ADD . /go/src/github.com/phanyzewski/book_api
 
-CMD ["book_api"]
+RUN go get -v ./...
+
+RUN go get github.com/rnubel/pgmgr

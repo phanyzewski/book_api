@@ -12,15 +12,17 @@ import (
 	_ "github.com/lib/pq"
 )
 
+// App main entry for program
 type App struct {
 	Router *mux.Router
 	DB     *sqlx.DB
 }
 
+// Initialize database and routes
 func (a *App) Initialize(dataSourceName string) {
 	var err error
 
-	a.DB, err = sqlx.Connect("postgres", "postgres://dev@localhost/book_development?sslmode=disable")
+	a.DB, err = sqlx.Connect("postgres", dataSourceName)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -29,10 +31,12 @@ func (a *App) Initialize(dataSourceName string) {
 	a.InitializeRoutes()
 }
 
+// Run serve up http listeners
 func (a *App) Run(addr string) {
 	log.Fatal(http.ListenAndServe(addr, a.Router))
 }
 
+// InitializeRoutes setup RESTful routing
 func (a *App) InitializeRoutes() {
 	a.Router.HandleFunc("/books", a.GetBooks).Methods("GET")
 	a.Router.HandleFunc("/book", a.CreateBook).Methods("POST")
@@ -56,10 +60,12 @@ func (a *App) InitializeRoutes() {
 	a.Router.HandleFunc("/publisher/{id:[0-9]+}", a.DeletePublisher).Methods("DELETE")
 }
 
+// RespondWithError json error response
 func RespondWithError(w http.ResponseWriter, code int, message string) {
 	RespondWithJSON(w, code, map[string]string{"error": message})
 }
 
+// RespondWithJSON normal json response
 func RespondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
 	response, _ := json.Marshal(payload)
 
@@ -68,7 +74,7 @@ func RespondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
 	w.Write(response)
 }
 
-// Display a single book
+// GetBook a single book
 func (a *App) GetBook(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	id, err := strconv.Atoi(params["id"])
@@ -92,7 +98,7 @@ func (a *App) GetBook(w http.ResponseWriter, r *http.Request) {
 	RespondWithJSON(w, http.StatusOK, b)
 }
 
-// Display all books
+// GetBooks all books
 func (a *App) GetBooks(w http.ResponseWriter, r *http.Request) {
 	count, _ := strconv.Atoi(r.FormValue("count"))
 	start, _ := strconv.Atoi(r.FormValue("start"))
@@ -113,7 +119,7 @@ func (a *App) GetBooks(w http.ResponseWriter, r *http.Request) {
 	RespondWithJSON(w, http.StatusOK, books)
 }
 
-// Create a new book
+// CreateBook new book
 func (a *App) CreateBook(w http.ResponseWriter, r *http.Request) {
 	var book Book
 	decoder := json.NewDecoder(r.Body)
@@ -132,6 +138,7 @@ func (a *App) CreateBook(w http.ResponseWriter, r *http.Request) {
 	RespondWithJSON(w, http.StatusCreated, book)
 }
 
+// UpdateBook post request on book
 func (a *App) UpdateBook(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	id, err := strconv.Atoi(params["id"])
@@ -157,6 +164,7 @@ func (a *App) UpdateBook(w http.ResponseWriter, r *http.Request) {
 	RespondWithJSON(w, http.StatusOK, book)
 }
 
+// DeleteBook remove book from db
 func (a *App) DeleteBook(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	id, err := strconv.Atoi(params["id"])
@@ -174,7 +182,7 @@ func (a *App) DeleteBook(w http.ResponseWriter, r *http.Request) {
 	RespondWithJSON(w, http.StatusOK, map[string]string{"result": "success"})
 }
 
-// Display a single author
+// GetAuthor return a single author
 func (a *App) GetAuthor(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	id, err := strconv.Atoi(params["id"])
@@ -198,7 +206,7 @@ func (a *App) GetAuthor(w http.ResponseWriter, r *http.Request) {
 	RespondWithJSON(w, http.StatusOK, author)
 }
 
-// Display all authors
+// GetAuthors all authors
 func (a *App) GetAuthors(w http.ResponseWriter, r *http.Request) {
 	count, _ := strconv.Atoi(r.FormValue("count"))
 	start, _ := strconv.Atoi(r.FormValue("start"))
@@ -219,7 +227,7 @@ func (a *App) GetAuthors(w http.ResponseWriter, r *http.Request) {
 	RespondWithJSON(w, http.StatusOK, authors)
 }
 
-// Create a new author
+// CreateAuthor a new author
 func (a *App) CreateAuthor(w http.ResponseWriter, r *http.Request) {
 	var author Author
 	decoder := json.NewDecoder(r.Body)
@@ -238,6 +246,7 @@ func (a *App) CreateAuthor(w http.ResponseWriter, r *http.Request) {
 	RespondWithJSON(w, http.StatusCreated, author)
 }
 
+// UpdateAuthor update author attributes
 func (a *App) UpdateAuthor(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	id, err := strconv.Atoi(params["id"])
@@ -263,6 +272,7 @@ func (a *App) UpdateAuthor(w http.ResponseWriter, r *http.Request) {
 	RespondWithJSON(w, http.StatusOK, author)
 }
 
+// DeleteAuthor remove author
 func (a *App) DeleteAuthor(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	id, err := strconv.Atoi(params["id"])
@@ -280,7 +290,7 @@ func (a *App) DeleteAuthor(w http.ResponseWriter, r *http.Request) {
 	RespondWithJSON(w, http.StatusOK, map[string]string{"result": "success"})
 }
 
-// Display a single publisher
+// GetPublisher a single publisher
 func (a *App) GetPublisher(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	id, err := strconv.Atoi(params["id"])
@@ -304,7 +314,7 @@ func (a *App) GetPublisher(w http.ResponseWriter, r *http.Request) {
 	RespondWithJSON(w, http.StatusOK, p)
 }
 
-// Display all publishers
+// GetPublishers all publishers
 func (a *App) GetPublishers(w http.ResponseWriter, r *http.Request) {
 	count, _ := strconv.Atoi(r.FormValue("count"))
 	start, _ := strconv.Atoi(r.FormValue("start"))
@@ -325,7 +335,7 @@ func (a *App) GetPublishers(w http.ResponseWriter, r *http.Request) {
 	RespondWithJSON(w, http.StatusOK, publishers)
 }
 
-// Create a new publisher
+// CreatePublisher a new publisher
 func (a *App) CreatePublisher(w http.ResponseWriter, r *http.Request) {
 	var publisher Publisher
 	decoder := json.NewDecoder(r.Body)
@@ -344,6 +354,7 @@ func (a *App) CreatePublisher(w http.ResponseWriter, r *http.Request) {
 	RespondWithJSON(w, http.StatusCreated, publisher)
 }
 
+// UpdatePublisher update publisher attributes
 func (a *App) UpdatePublisher(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	id, err := strconv.Atoi(params["id"])
@@ -369,6 +380,7 @@ func (a *App) UpdatePublisher(w http.ResponseWriter, r *http.Request) {
 	RespondWithJSON(w, http.StatusOK, publisher)
 }
 
+// DeletePublisher remove publisher
 func (a *App) DeletePublisher(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	id, err := strconv.Atoi(params["id"])
