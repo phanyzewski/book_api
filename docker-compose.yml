@@ -3,6 +3,7 @@ services:
   db:
     image: postgres
     environment:
+      PGDATA: ./db/migrate
       POSTGRES_DB: book_development
       POSTGRES_USER: dev
       POSTGRES_PASSWORD:
@@ -10,7 +11,7 @@ services:
       - 5432:5432
   app:
     build: .
-    command: ["pgmgr", "db", "migrate", "go", "run", "book_api.go"]
+    command: ["./wait-for-it.sh", "db:5432", "--","book_api"]
     volumes:
       - .:/go/src/github.com/phanyzewski/book_api
     ports:

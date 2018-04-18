@@ -5,5 +5,3 @@ WORKDIR /go/src/github.com/phanyzewski/book_api
 ADD . /go/src/github.com/phanyzewski/book_api
 
 RUN go get -v ./...
-
-RUN go get github.com/rnubel/pgmgr
