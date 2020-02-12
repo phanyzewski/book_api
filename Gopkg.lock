@@ -2,44 +2,62 @@
 
 
 [[projects]]
+  digest = "1:160eabf7a69910fd74f29c692718bc2437c1c1c7d4c9dea9712357752a70e5df"
   name = "github.com/gorilla/context"
   packages = ["."]
+  pruneopts = "UT"
   revision = "1ea25387ff6f684839d82767c1733ff4d4d15d0a"
   version = "v1.1"
 
 [[projects]]
+  digest = "1:25ebe6496abb289ef977c081b2d49f56dd97c32db4ca083d37f95923909ced02"
   name = "github.com/gorilla/mux"
   packages = ["."]
-  revision = "53c1911da2b537f792e7cafcb446b05ffe33b996"
-  version = "v1.6.1"
+  pruneopts = "UT"
+  revision = "75dcda0896e109a2a22c9315bca3bb21b87b2ba5"
+  version = "v1.7.4"
 
 [[projects]]
   branch = "master"
+  digest = "1:7654989089e5bd5b6734ec3be8b695e87d3f1f8d95620b343fd7d3995a5b60d7"
   name = "github.com/jmoiron/sqlx"
   packages = [
     ".",
-    "reflectx"
+    "reflectx",
   ]
+  pruneopts = "UT"
   revision = "2aeb6a910c2b94f2d5eb53d9895d80e27264ec41"
 
 [[projects]]
+  digest = "1:70e697d67ccaec45e16bac3a32380ebcd9e7e071079c60d0171d42cf1cf9748a"
   name = "github.com/joho/godotenv"
   packages = ["."]
+  pruneopts = "UT"
   revision = "a79fa1e548e2c689c241d10173efd51e5d689d5b"
   version = "v1.2.0"
 
 [[projects]]
   branch = "master"
+  digest = "1:1e537dfb7b4d543e25efa2c812084dd65736f8010979c1b7e167a5b876563199"
   name = "github.com/lib/pq"
   packages = [
     ".",
-    "oid"
+    "oid",
   ]
+  pruneopts = "UT"
   revision = "d34b9ff171c21ad295489235aec8b6626023cd04"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "ced027cf1f4b15d17e6509c48b90f39ff30c466fe4bb7ab61fa75b7e73b90a59"
+  input-imports = [
+    "github.com/gorilla/context",
+    "github.com/gorilla/mux",
+    "github.com/jmoiron/sqlx",
+    "github.com/jmoiron/sqlx/reflectx",
+    "github.com/joho/godotenv",
+    "github.com/lib/pq",
+    "github.com/lib/pq/oid",
+  ]
   solver-name = "gps-cdcl"
   solver-version = 1
